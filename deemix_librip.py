@@ -19,9 +19,10 @@ import deezer2 # deezer-python clashes with deezer-py (deemix dependancy) over t
 @click.command()
 @click.option('--config', is_flag=True, help="Generate default config and exit")
 @click.option('--lazy', is_flag=True, help="Run lazy artist match instead of interactive (download all search matches for artists)")
+@click.option('--lazy-accuracy', help="Under lazy mode, download only the first INTEGER matches", type=int, default=-1)
 @click.option('--limit', nargs=1, help="Set maximum number of artists ftech from source (Default: 1000)", type=int, default=500)
 @click.argument('services', nargs=-1, required=True, type=str)
-def main(config: bool, lazy: bool, limit: int, services: Tuple[str]) -> None:
+def main(config: bool, lazy: bool, lazy_accuracy: int, limit: int, services: Tuple[str]) -> None:
     """ Supported services values (source of artists to download): lastfm, spotify 
     """
     config_path = Path('.').joinpath('config').resolve()
@@ -30,19 +31,22 @@ def main(config: bool, lazy: bool, limit: int, services: Tuple[str]) -> None:
         deemix.app.Settings(config_path)
         return 
   
-    dz = Deezer(config_path)
-    if lazy: 
-        get_artist_urls = dz.lazy_get_artist_urls
-    else: 
-        get_artist_urls = dz.interactive_get_artist_urls
-
+    sources = []
     for service in services: 
         if service.casefold() == "lastfm".casefold():
-            source = Lastfm(limit) 
-            get_artist_urls(source.artist_names())
+            source = Lastfm(limit)
+            sources.append(source.artist_names())
         elif service.casefold() == "spotify".casefold(): 
             source = Spotify(limit)
-            get_artist_urls(source.artist_names())
+            sources.append(source.artist_names())
+    
+    dz = Deezer(config_path)
+    for source in sources:  
+        if lazy: 
+            dz.lazy_get_artist_urls(source, lazy_accuracy)
+        else: 
+            dz.interactive_get_artist_urls(source)
+
     dz.download_artists()
     return 
 
@@ -88,11 +92,13 @@ class Deezer:
         self.artist_urls = []
         self.config_path = config_path
 
-    def lazy_get_artist_urls(self, artist_iter: Iterable) -> None:   
+    def lazy_get_artist_urls(self, artist_iter: Iterable, accuracy: int) -> None:   
         deezer = deezer2.Client()
         for artist in artist_iter: 
             click.echo("Searching for {}".format(artist))
             matches = deezer.search(artist, relation='artist')
+            if accuracy > 0 and accuracy is not None:  
+                matches = matches[:accuracy]
             for artist in matches: 
                 self.add_artist_url(artist.link) 
 
@@ -142,7 +148,6 @@ class Deezer:
         deemix_cli.login() 
         deemix_cli.downloadLink(self.artist_urls, None) # As above, passing None uses bitrate from config.json 
         click.echo("Finished downloading.")
-
 
 if __name__ == "__main__" : 
     main() 
