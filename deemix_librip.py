@@ -9,6 +9,7 @@ from pathlib import Path
 import requests
 import click 
 from deemix.app.cli import cli
+from deemix.app.settings import Settings 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth 
 
@@ -20,14 +21,14 @@ import deezer2 # deezer-python clashes with deezer-py (deemix dependancy) over t
 @click.option('--lazy', is_flag=True, help="Run lazy artist match instead of interactive (download all search matches for artists)")
 @click.option('--lazy-accuracy', help="Under lazy mode, download only the first INTEGER matches", type=int, default=-1)
 @click.option('--limit', nargs=1, help="Set maximum number of artists ftech from source (Default: 500)", type=int, default=500)
-@click.argument('services', nargs=-1, required=True, type=str)
+@click.argument('services', nargs=-1, type=str)
 def main(config: bool, lazy: bool, lazy_accuracy: int, limit: int, services: Tuple[str]) -> None:
     """ Supported services values (source of artists to download): lastfm, spotify 
     """
     config_path = Path('.').joinpath('config').resolve()
     
     if config: 
-        deemix.app.Settings(config_path)
+        Settings(config_path)
         return 
   
     sources = []
@@ -144,7 +145,7 @@ class Deezer:
             else:
                 self.add_artist(matches[artist_index]) 
        
-    def add_artist(self, artist: Artist) -> None: 
+    def add_artist(self, artist: deezer2.resources.Artist) -> None: 
         if artist.link not in self.artist_urls:
             self.artist.append(artist.link)
             click.echo("Added artist to download list: {}".format(artist.name))
