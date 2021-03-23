@@ -21,8 +21,9 @@ import deezer2 # deezer-python clashes with deezer-py (deemix dependancy) over t
 @click.option('--lazy', is_flag=True, help="Run lazy artist match instead of interactive (download all search matches for artists)")
 @click.option('--lazy-accuracy', help="Under lazy mode, download only the first INTEGER matches", type=int, default=-1)
 @click.option('--limit', nargs=1, help="Set maximum number of artists ftech from source (Default: 500)", type=int, default=500)
-@click.argument('services', nargs=-1, type=str)
-def main(config: bool, lazy: bool, lazy_accuracy: int, limit: int, services: Tuple[str]) -> None:
+@click.option('--lastfm', is_flag=True, help="Use lastfm as a source")
+@click.option('--spotify', is_flag=True, help="Use spotify as a source")
+def main(config: bool, lazy: bool, lazy_accuracy: int, limit: int, lastfm: bool, spotify: bool) -> None:
     """ Supported services values (source of artists to download): lastfm, spotify 
     """
     config_path = Path('.').joinpath('config').resolve()
@@ -30,13 +31,16 @@ def main(config: bool, lazy: bool, lazy_accuracy: int, limit: int, services: Tup
     if config: 
         Settings(config_path)
         return 
+
+    if len(services) == 0: 
+        click.echo("No sources entered, exiting")
+        return 
   
-    sources = []
-    for service in services: 
-        if service.casefold() == "lastfm".casefold():
+    sources = [] 
+    if lastfm:
             source = Lastfm(limit)
             sources.append(source.artist_names())
-        elif service.casefold() == "spotify".casefold(): 
+    if spotify: 
             source = Spotify(limit)
             sources.append(source.artist_names())
     
@@ -147,7 +151,7 @@ class Deezer:
        
     def add_artist(self, artist: deezer2.resources.Artist) -> None: 
         if artist.link not in self.artist_urls:
-            self.artist.append(artist.link)
+            self.artist_urls.append(artist.link)
             click.echo("Added artist to download list: {}".format(artist.name))
 
     def download_artists(self) -> None:
