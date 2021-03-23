@@ -32,7 +32,7 @@ def main(config: bool, lazy: bool, lazy_accuracy: int, limit: int, lastfm: bool,
         Settings(config_path)
         return 
 
-    if len(services) == 0: 
+    if not (spotify and lastfm): 
         click.echo("No sources entered, exiting")
         return 
   
