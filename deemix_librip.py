@@ -9,7 +9,7 @@ from pprint import pprint
 # third arty
 import requests
 import click 
-import deemix.app 
+from deemix.app.cli import cli
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth 
 
@@ -94,7 +94,7 @@ class Deezer:
             click.echo("Searching for {}".format(artist))
             matches = deezer.search(artist, relation='artist')
             for artist in matches: 
-                add_artist_url(artist.link) 
+                self.add_artist_url(artist.link) 
 
     def interactive_get_artist_urls(self, artist_iter: Iterable): 
         deezer = deezer2.Client()
@@ -138,7 +138,7 @@ class Deezer:
         # Calls the cli wrapper around deemix.app.deemix
         # For the most part, we access deemix almost as high level as the interactive user 
         # passing None uses the default path from config/config.json 
-        deemix_cli = app.cli(None, self.config_path) 
+        deemix_cli = cli(None, self.config_path) 
         deemix_cli.login() 
         deemix_cli.downloadLink(self.artist_urls, None) # As above, passing None uses bitrate from config.json 
         click.echo("Finished downloading.")

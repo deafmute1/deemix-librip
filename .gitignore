@@ -1,4 +1,5 @@
 config/
+deemix_librip_testing.py
 
 # ---> Python
 # Byte-compiled / optimized / DLL files

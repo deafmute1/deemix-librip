@@ -1,7 +1,7 @@
 # deemix-librip
 A python script that pulls artists from your spotify or lastfm accounts and uses deemix to download them.
 Allows full access to deemix options via its config.json file. 
-
+You can use _any_ lastfm account as a source (no authentication is needed to access user artists), but login access is required for spotify.
 
 ## Install and run  
 1. `git clone https://git.ayew.host/deafmute/deemix-librip.git && cd deemix-librip`
