@@ -4,7 +4,6 @@
 # stdlib 
 from typing import Generator, List, Iterable, Tuple
 from pathlib import Path 
-from pprint import pprint
 
 # third arty
 import requests
@@ -20,7 +19,7 @@ import deezer2 # deezer-python clashes with deezer-py (deemix dependancy) over t
 @click.option('--config', is_flag=True, help="Generate default config and exit")
 @click.option('--lazy', is_flag=True, help="Run lazy artist match instead of interactive (download all search matches for artists)")
 @click.option('--lazy-accuracy', help="Under lazy mode, download only the first INTEGER matches", type=int, default=-1)
-@click.option('--limit', nargs=1, help="Set maximum number of artists ftech from source (Default: 1000)", type=int, default=500)
+@click.option('--limit', nargs=1, help="Set maximum number of artists ftech from source (Default: 500)", type=int, default=500)
 @click.argument('services', nargs=-1, required=True, type=str)
 def main(config: bool, lazy: bool, lazy_accuracy: int, limit: int, services: Tuple[str]) -> None:
     """ Supported services values (source of artists to download): lastfm, spotify 
@@ -95,24 +94,33 @@ class Deezer:
     def lazy_get_artist_urls(self, artist_iter: Iterable, accuracy: int) -> None:   
         deezer = deezer2.Client()
         for artist in artist_iter: 
-            click.echo("Searching for {}".format(artist))
+            click.echo("\nSearching for {}".format(artist))
             matches = deezer.search(artist, relation='artist')
+            
+            if len(matches) == 0: 
+                click.echo("No matches found")
+
             if accuracy > 0 and accuracy is not None:  
                 matches = matches[:accuracy]
+
             for artist in matches: 
-                self.add_artist_url(artist.link) 
+                self.add_artist(artist) 
 
     def interactive_get_artist_urls(self, artist_iter: Iterable): 
         deezer = deezer2.Client()
         artist_urls = [] 
         for artist in artist_iter: 
-            click.echo("Searching for {}".format(artist))
+            click.echo("\nSearching for {}".format(artist))
             matches = deezer.search(artist, relation='artist')
             
+            if len(matches) == 0: 
+                click.echo("No matches found")
+                continue
+
             # if we get an exact match take it and move on 
             if matches[0].name.casefold() == artist.casefold(): 
-                click.echo("Exact match found, moving on")
-                self.add_artist_url(matches[0].link) 
+                click.echo("Exact match found")
+                self.add_artist(matches[0]) 
                 continue 
 
             for i, match in enumerate(matches): 
@@ -130,15 +138,16 @@ class Deezer:
                         indexes_inner = [i for i in range(len(matches))]
                         break
                     else:  
-                        indexes_inner.append(index)         
-                for i in indexes_inner: 
-                    self.add_artist_url(matches[i].link) 
+                        indexes_inner.append(index)
+                for i in indexes_inner:
+                    self.add_artist(matches[i]) 
             else:
-                self.add_artist_url(matches[artist_index].link) 
+                self.add_artist(matches[artist_index]) 
        
-    def add_artist_url(self, url: str) -> None: 
-        if url not in self.artist_urls: 
-            self.artist_urls.append(url)
+    def add_artist(self, artist: Artist) -> None: 
+        if artist.link not in self.artist_urls:
+            self.artist.append(artist.link)
+            click.echo("Added artist to download list: {}".format(artist.name))
 
     def download_artists(self) -> None:
         # Calls the cli wrapper around deemix.app.deemix
