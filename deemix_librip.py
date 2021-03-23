@@ -60,7 +60,7 @@ class Lastfm:
         response = requests.get('https://ws.audioscrobbler.com/2.0/', params = api_query) 
         self.artists = response.json()
          
-    def artist_name(self) -> Generator[str, None, None]: 
+    def artist_names(self) -> Generator[str, None, None]: 
         for artist in self.artists['artists']['artist']:
             yield artist['name']
 
