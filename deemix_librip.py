@@ -4,6 +4,7 @@
 # stdlib 
 from typing import Generator, List, Iterable, Tuple
 from pathlib import Path 
+from itertools import chain 
 
 # third arty
 import requests
@@ -17,50 +18,47 @@ from spotipy.oauth2 import SpotifyOAuth
 import deezer2 # deezer-python clashes with deezer-py (deemix dependancy) over the deezer namespace. 
 
 @click.command()
-@click.option('--config', is_flag=True, help="Generate default config and exit")
 @click.option('--lazy', is_flag=True, help="Run lazy artist match instead of interactive (download all search matches for artists)")
 @click.option('--lazy-accuracy', help="Under lazy mode, download only the first INTEGER matches", type=int, default=-1)
-@click.option('--limit', nargs=1, help="Set maximum number of artists ftech from source (Default: 500)", type=int, default=500)
-@click.option('--lastfm', is_flag=True, help="Use lastfm as a source")
-@click.option('--spotify', is_flag=True, help="Use spotify as a source")
-def main(config: bool, lazy: bool, lazy_accuracy: int, limit: int, lastfm: bool, spotify: bool) -> None:
-    """ Supported services values (source of artists to download): lastfm, spotify 
+@click.option('--limit', nargs=1, help="Set maximum number of artists fetch from each source (Default: 500)", type=int, default=500)
+@click.argument('sources', nargs=-1, required=True, type=str) 
+def main(lazy: bool, lazy_accuracy: int, limit: int, sources: Tuple) -> None:
+    """ \b
+    Supported SOURCES values (may specify multiple):  
+        lastfm      use lastfm as a source of artists  
+        spotify     use spotify as a source of artists 
+        config      generates a deemix default config at ./config/config.json if file does not exist, and exits. 
     """
     config_path = Path('.').joinpath('config').resolve()
     
-    if config: 
+    if "config" in sources: 
         Settings(config_path)
         return 
 
-    if not (spotify and lastfm): 
-        click.echo("No sources entered, exiting")
-        return 
-  
-    sources = [] 
-    if lastfm:
-            source = Lastfm(limit)
-            sources.append(source.artist_names())
-    if spotify: 
-            source = Spotify(limit)
-            sources.append(source.artist_names())
+    artist_gens = [] 
+    for source in sources: 
+        if source.casefold() == 'lastfm'.casefold():
+            library = Lastfm(limit)
+        if source.casefold() == 'spotify'.casefold(): 
+            library = Spotify(limit)
+        artist_gens.append(library.artist_names())
     
+    click.echo("Now searching deezer for your artists \n")
     dz = Deezer(config_path)
-    for source in sources:  
-        if lazy: 
-            dz.lazy_get_artist_urls(source, lazy_accuracy)
-        else: 
-            dz.interactive_get_artist_urls(source)
+    if lazy: 
+        dz.lazy_get_artist_urls(chain.from_iterable(artist_gens), lazy_accuracy)
+    else: 
+        dz.interactive_get_artist_urls(chain.from_iterable(artist_gens))
 
     dz.download_artists()
     return 
 
 class Lastfm: 
     def __init__(self, limit: int) -> None:
-        user = click.prompt("Enter lastfm username")
         api_query = { 
             'method': 'library.getartists', 
-            'api_key': 'e7c00c1ca15826ab02784b56578f9e3c',
-            'user': user,
+            'api_key': click.prompt("Enter a lastfm api key"),
+            'user':  click.prompt("Enter lastfm username"),
             'format': 'json',
             'page': 1 ,
             'limit': limit 
@@ -76,8 +74,8 @@ class Spotify:
     def __init__(self, limit: int) -> None: 
         sp = spotipy.Spotify(auth_manager = SpotifyOAuth(
             scope = 'user-follow-read,user-follow-modify',
-            client_id = '8a4cc5a6336747e68ca89799cb182c0c', 
-            client_secret = '65e1411ad126497fb928add738d4587b', 
+            client_id = click.prompt("Enter a spotify api client id"), 
+            client_secret = click.prompt("Enter its matching client secret"),  
             redirect_uri = 'https://example.com',  
             open_browser = True 
         ))
@@ -131,7 +129,7 @@ class Deezer:
             for i, match in enumerate(matches): 
                 click.echo("{} {}".format(i, match.name))
             
-            index = click.prompt('Enter a index to download corresponding artist (-1 to skip artist, -2 if you wish to select multiple artist)', type=int)
+            index = click.prompt('Enter a index to download corresponding artist (-1 to skip artist, -2 to select multiple artist)', type=int)
             if index == -1: 
                 continue 
             elif index == -2: 

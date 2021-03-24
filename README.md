@@ -12,27 +12,38 @@ You can use _any_ lastfm account as a source (no authentication is needed to acc
 
 ## Usage
 ```
-Usage: deemix_librip.py [OPTIONS] SERVICES...
+Usage: deemix_librip.py [OPTIONS] SOURCES...
 
-  Supported services values (source of artists to download): lastfm, spotify
+  Supported SOURCES values (may specify multiple):  
+      lastfm      use lastfm as a source of artists  
+      spotify     use spotify as a source of artists 
+      config      generates a deemix default config at ./config/config.json if file does not exist, and exits. 
 
 Options:
-  --config         Generate default config and exit
-  --lazy           Run lazy artist match instead of interactive (download all
-                   search matches for artists)
+  --lazy                   Run lazy artist match instead of interactive
+                           (download all search matches for artists)
 
-  --limit INTEGER  Set maximum number of artists ftech from source (Default:
-                   1000)
+  --lazy-accuracy INTEGER  Under lazy mode, download only the first INTEGER
+                           matches
 
-  --help           Show this message and exit.
+  --limit INTEGER          Set maximum number of artists fetch from each
+                           source (Default: 500)
+
+  --help                   Show this message and exit.
 ```
 
+## Unattended usage 
+This script for obvious reasons may have a very long runtime. You may want to consider running on a long uptime machine (e.g. a server) in tmux or screen. If you run under `--lazy` mode, the script requires no human intervention _after_ you enter your deezer arl cookie. The script only needs user intervention whilst fetching artists in order to authenticate to the APIs. This processes should not take more then a few minutes.
+
+## Authenticating to APIs. 
+For lastfm, you need to generate an api key [here](https://secure.last.fm/login?next=/api/account/create). The required information is public and no further auth is needed. 
+
+For spotify, you need to generate a client id and its corresponding secret [here](https://developer.spotify.com/dashboard/). After creation, go into your created application, select `Edit Settings` and set the redirect uri to `https://example.com`. You will also need to provide access to your account. The script will provide a link to a spotify OAuth login. AFter login, it will redirect you to a URL beinning with "https://example.com". Copy and paste this whole URL into the script when prompted.  
+
 ## deezer2?
-The deezer2 folder contains the deezer-python library modified to be in the `deezer2` namespace instead of the `deezer` namespace. 
-This is because deezer-py, a dependancy of deemix, also uses that namespace. 
-See deezer2/LICENSE for copyright details concerning that folder. 
+The deezer2 folder contains the deezer-python library modified to be in the `deezer2` namespace instead of the `deezer` namespace. This is because deezer-py, a dependancy of deemix, also uses that namespace. See deezer2/LICENSE for copyright details concerning that folder. 
 
-
-
-
+## Copyright 
+Copyright 2020 deemix-librip
+Licensed under the terms of the GPL3 or optionally, any later versions. 
 
