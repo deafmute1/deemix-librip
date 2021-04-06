@@ -45,5 +45,6 @@ The deezer2 folder contains the deezer-python library modified to be in the `dee
 
 ## Copyright 
 Copyright 2020 deemix-librip
+
 Licensed under the terms of the GPL3 or optionally, any later versions. 
 
