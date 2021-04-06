@@ -36,9 +36,9 @@ Options:
 This script for obvious reasons may have a very long runtime. You may want to consider running on a long uptime machine (e.g. a server) in tmux or screen. If you run under `--lazy` mode, the script requires no human intervention _after_ you enter your deezer arl cookie. The script only needs user intervention whilst fetching artists in order to authenticate to the APIs. This processes should not take more then a few minutes.
 
 ## Authenticating to APIs. 
-For lastfm, you need to generate an api key [here](https://secure.last.fm/login?next=/api/account/create). The required information is public and no further auth is needed. 
+For **lastfm**, you need to generate an api key [here](https://secure.last.fm/login?next=/api/account/create). The required information is public and no further auth is needed. 
 
-For spotify, you need to generate a client id and its corresponding secret [here](https://developer.spotify.com/dashboard/). After creation, go into your created application, select `Edit Settings` and set the redirect uri to `https://example.com`. You will also need to provide access to your account. The script will provide a link to a spotify OAuth login. AFter login, it will redirect you to a URL beinning with "https://example.com". Copy and paste this whole URL into the script when prompted.  
+For **spotify**, you need to generate a client id and its corresponding secret [here](https://developer.spotify.com/dashboard/). After creation, go into your created application, select `Edit Settings` and set the redirect uri to `https://example.com`.You will also need to provide access to your account. The script will provide a link to a spotify OAuth login - on most destktops this should auto-open in your browser, otherwise you can copy and paste it. After login, it will redirect you to a URL beginning with "https://example.com". Copy and paste this whole URL into the CLI when prompted.  
 
 ## deezer2?
 The deezer2 folder contains the deezer-python library modified to be in the `deezer2` namespace instead of the `deezer` namespace. This is because deezer-py, a dependancy of deemix, also uses that namespace. See deezer2/LICENSE for copyright details concerning that folder. 
