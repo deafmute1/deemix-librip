@@ -6,9 +6,9 @@ You can use _any_ lastfm account as a source (no authentication is needed to acc
 ## Install and run  
 1. `git clone https://git.ayew.host/deafmute/deemix-librip.git && cd deemix-librip`
 3. `pip install -r requirements.txt`
-4. `python deemix-librip.py --config` 
+4. `python deemix-librip.py config` 
 5. Modify `./config/config.json` to your desire 
-6. `python deemix-librip.py <services>`
+6. `python deemix-librip.py <SOURCES...>`
 
 ## Usage
 ```
@@ -17,8 +17,8 @@ Usage: deemix_librip.py [OPTIONS] SOURCES...
   Supported SOURCES values (may specify multiple):  
       lastfm      use lastfm as a source of artists  
       spotify     use spotify as a source of artists 
-      config      generates a deemix default config at ./config/config.json if file does not exist, and exits. 
-
+      config      generates a default deemix config at ./config/config.json if this file does not exist, and exits. 
+      
 Options:
   --lazy                   Run lazy artist match instead of interactive
                            (download all search matches for artists)
@@ -46,5 +46,5 @@ The deezer2 folder contains the deezer-python library modified to be in the `dee
 ## Copyright 
 Copyright 2020 deemix-librip
 
-Licensed under the terms of the GPL3 or optionally, any later versions. 
+Licensed under the terms of the GPL Version 3 or optionally, any later versions. 
 
